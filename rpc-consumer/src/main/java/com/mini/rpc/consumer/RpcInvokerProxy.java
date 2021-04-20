@@ -4,18 +4,21 @@ import com.mini.rpc.common.MiniRpcFuture;
 import com.mini.rpc.common.MiniRpcRequest;
 import com.mini.rpc.common.MiniRpcRequestHolder;
 import com.mini.rpc.common.MiniRpcResponse;
+import com.mini.rpc.common.RpcServiceHelper;
+import com.mini.rpc.common.ServiceMeta;
 import com.mini.rpc.protocol.MiniRpcProtocol;
 import com.mini.rpc.protocol.MsgHeader;
 import com.mini.rpc.protocol.MsgType;
 import com.mini.rpc.protocol.ProtocolConstants;
 import com.mini.rpc.provider.registry.RegistryService;
 import com.mini.rpc.serialization.SerializationTypeEnum;
-import io.netty.channel.DefaultEventLoop;
-import io.netty.util.concurrent.DefaultPromise;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
+
+import io.netty.channel.DefaultEventLoop;
+import io.netty.util.concurrent.DefaultPromise;
 
 public class RpcInvokerProxy implements InvocationHandler {
 
@@ -31,16 +34,15 @@ public class RpcInvokerProxy implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        MiniRpcProtocol<MiniRpcRequest> protocol = new MiniRpcProtocol<>();
-        MsgHeader header = new MsgHeader();
         long requestId = MiniRpcRequestHolder.REQUEST_ID_GEN.incrementAndGet();
+
+        MsgHeader header = new MsgHeader();
         header.setMagic(ProtocolConstants.MAGIC);
         header.setVersion(ProtocolConstants.VERSION);
         header.setRequestId(requestId);
         header.setSerialization((byte) SerializationTypeEnum.HESSIAN.getType());
         header.setMsgType((byte) MsgType.REQUEST.getType());
         header.setStatus((byte) 0x1);
-        protocol.setHeader(header);
 
         MiniRpcRequest request = new MiniRpcRequest();
         request.setServiceVersion(this.serviceVersion);
@@ -48,15 +50,23 @@ public class RpcInvokerProxy implements InvocationHandler {
         request.setMethodName(method.getName());
         request.setParameterTypes(method.getParameterTypes());
         request.setParams(args);
+
+        MiniRpcProtocol<MiniRpcRequest> protocol = new MiniRpcProtocol<>();
+        protocol.setHeader(header);
         protocol.setBody(request);
 
-        RpcConsumer rpcConsumer = new RpcConsumer();
+        String serviceKey = RpcServiceHelper.buildServiceKey(request.getClassName(), request.getServiceVersion());
+        int invokerHashCode = args.length > 0 ? RpcServiceHelper.hashCode(args[0].toString()).asInt() :
+            RpcServiceHelper.hashCode(serviceKey).asInt();
+        ServiceMeta serviceMetadata = registryService.discovery(serviceKey, invokerHashCode);
+        if (serviceMetadata == null) {
+            throw new RuntimeException(String.format("service not exist: %s", serviceKey));
+        }
+
         MiniRpcFuture<MiniRpcResponse> future = new MiniRpcFuture<>(new DefaultPromise<>(new DefaultEventLoop()), timeout);
         MiniRpcRequestHolder.REQUEST_MAP.put(requestId, future);
-        rpcConsumer.sendRequest(protocol, this.registryService);
-
+        new RpcConsumer().sendRequest(protocol, serviceMetadata);
         // TODO hold request by ThreadLocal
-
 
         return future.getPromise().get(future.getTimeout(), TimeUnit.MILLISECONDS).getData();
     }

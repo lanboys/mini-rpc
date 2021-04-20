@@ -1,18 +1,16 @@
 package com.mini.rpc.registry;
 
-import com.google.common.hash.Hashing;
+import com.mini.rpc.common.RpcServiceHelper;
 import com.mini.rpc.common.ServiceMeta;
 import com.mini.rpc.provider.registry.RegistryFactory;
 import com.mini.rpc.provider.registry.RegistryService;
 import com.mini.rpc.provider.registry.RegistryType;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RegistryTest {
@@ -110,7 +108,7 @@ public class RegistryTest {
     }
 
     private int murmurHashCode(String str) {
-        int i = Hashing.murmur3_32().hashString(str, StandardCharsets.UTF_8).asInt();
+        int i = RpcServiceHelper.hashCode(str).asInt();
         System.out.println("murmurHashCode(): " + str + "  ->  " + i);
         return i;
     }

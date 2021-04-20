@@ -10,7 +10,6 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
 import org.apache.curator.x.discovery.ServiceInstance;
-import org.apache.curator.x.discovery.details.JsonInstanceSerializer;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,7 +18,7 @@ public class ZookeeperRegistryService implements RegistryService {
 
     public static final int BASE_SLEEP_TIME_MS = 1000;
     public static final int MAX_RETRIES = 3;
-    public static final String ZK_BASE_PATH = "/mini_rpc";
+    public static final String ZK_BASE_PATH = "/mini-rpc";
 
     private final ServiceDiscovery<ServiceMeta> serviceDiscovery;
     private final ZKConsistentHashLoadBalancer loadBalancer;

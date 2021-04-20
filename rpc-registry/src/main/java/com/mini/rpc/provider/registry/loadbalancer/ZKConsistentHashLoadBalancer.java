@@ -1,12 +1,10 @@
 package com.mini.rpc.provider.registry.loadbalancer;
 
-import com.google.common.hash.HashCode;
-import com.google.common.hash.Hashing;
+import com.mini.rpc.common.RpcServiceHelper;
 import com.mini.rpc.common.ServiceMeta;
 
 import org.apache.curator.x.discovery.ServiceInstance;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -35,8 +33,7 @@ public class ZKConsistentHashLoadBalancer implements ServiceLoadBalancer<Service
         for (ServiceInstance<ServiceMeta> instance : servers) {
             String prefix = buildServiceInstanceKey(instance) + VIRTUAL_NODE_SPLIT;
             for (int i = 0; i < VIRTUAL_NODE_SIZE; i++) {
-                HashCode hashCode = Hashing.murmur3_32().hashString(prefix + i, StandardCharsets.UTF_8);
-                ring.put(hashCode.asInt(), instance);
+                ring.put(RpcServiceHelper.hashCode(prefix + i).asInt(), instance);
             }
         }
         return ring;
