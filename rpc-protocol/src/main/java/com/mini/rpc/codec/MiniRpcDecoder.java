@@ -1,5 +1,6 @@
 package com.mini.rpc.codec;
 
+import com.mini.rpc.common.MiniRpcHeartBeat;
 import com.mini.rpc.common.MiniRpcRequest;
 import com.mini.rpc.common.MiniRpcResponse;
 import com.mini.rpc.protocol.MiniRpcProtocol;
@@ -8,12 +9,15 @@ import com.mini.rpc.protocol.MsgType;
 import com.mini.rpc.protocol.ProtocolConstants;
 import com.mini.rpc.serialization.RpcSerialization;
 import com.mini.rpc.serialization.SerializationFactory;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
 
 import java.util.List;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageDecoder;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class MiniRpcDecoder extends ByteToMessageDecoder {
 
     /*
@@ -86,7 +90,10 @@ public class MiniRpcDecoder extends ByteToMessageDecoder {
                 }
                 break;
             case HEARTBEAT:
-                // TODO
+                MiniRpcHeartBeat heartBeat = rpcSerialization.deserialize(data, MiniRpcHeartBeat.class);
+                if (heartBeat != null) {
+                    log.info("收到心跳包：{}", heartBeat);
+                }
                 break;
         }
     }

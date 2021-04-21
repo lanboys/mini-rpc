@@ -7,12 +7,14 @@ import com.mini.rpc.protocol.MiniRpcProtocol;
 import com.mini.rpc.protocol.MsgHeader;
 import com.mini.rpc.protocol.MsgStatus;
 import com.mini.rpc.protocol.MsgType;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.cglib.reflect.FastClass;
 
 import java.util.Map;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RpcRequestHandler extends SimpleChannelInboundHandler<MiniRpcProtocol<MiniRpcRequest>> {
@@ -42,7 +44,7 @@ public class RpcRequestHandler extends SimpleChannelInboundHandler<MiniRpcProtoc
                 response.setMessage(throwable.toString());
                 log.error("process request {} error", header.getRequestId(), throwable);
             }
-            ctx.writeAndFlush(resProtocol);
+            ctx.channel().writeAndFlush(resProtocol);
         });
     }
 

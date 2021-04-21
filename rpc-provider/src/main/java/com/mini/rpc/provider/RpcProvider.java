@@ -4,9 +4,19 @@ import com.mini.rpc.codec.MiniRpcDecoder;
 import com.mini.rpc.codec.MiniRpcEncoder;
 import com.mini.rpc.common.RpcServiceHelper;
 import com.mini.rpc.common.ServiceMeta;
+import com.mini.rpc.handler.RpcIdleStateHandler;
 import com.mini.rpc.handler.RpcRequestHandler;
 import com.mini.rpc.provider.annotation.RpcService;
 import com.mini.rpc.provider.registry.RegistryService;
+
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+
+import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.Map;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -16,13 +26,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.BeanPostProcessor;
-
-import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 public class RpcProvider implements InitializingBean, BeanPostProcessor {
@@ -62,6 +65,7 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline()
+                                    .addLast(new RpcIdleStateHandler())
                                     .addLast(new MiniRpcEncoder())
                                     .addLast(new MiniRpcDecoder())
                                     .addLast(new RpcRequestHandler(rpcServiceMap));

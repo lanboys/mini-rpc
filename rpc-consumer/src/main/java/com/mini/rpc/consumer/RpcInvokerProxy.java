@@ -63,9 +63,12 @@ public class RpcInvokerProxy implements InvocationHandler {
             throw new RuntimeException(String.format("service not exist: %s", serviceKey));
         }
 
+        if (!new RpcConsumer().sendRequest(protocol, serviceMetadata)) {
+            throw new RuntimeException(String.format("service connect failed: %s", serviceKey));
+        }
+
         MiniRpcFuture<MiniRpcResponse> future = new MiniRpcFuture<>(new DefaultPromise<>(new DefaultEventLoop()), timeout);
         MiniRpcRequestHolder.REQUEST_MAP.put(requestId, future);
-        new RpcConsumer().sendRequest(protocol, serviceMetadata);
         // TODO hold request by ThreadLocal
 
         return future.getPromise().get(future.getTimeout(), TimeUnit.MILLISECONDS).getData();
