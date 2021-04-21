@@ -15,6 +15,8 @@ import com.mini.rpc.serialization.SerializationTypeEnum;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.DefaultEventLoop;
@@ -25,6 +27,7 @@ public class RpcInvokerProxy implements InvocationHandler {
     private final String serviceVersion;
     private final long timeout;
     private final RegistryService registryService;
+    private static final Map<String, RpcConsumer> consumerMap = new ConcurrentHashMap<>();
 
     public RpcInvokerProxy(String serviceVersion, long timeout, RegistryService registryService) {
         this.serviceVersion = serviceVersion;
@@ -63,9 +66,19 @@ public class RpcInvokerProxy implements InvocationHandler {
             throw new RuntimeException(String.format("service not exist: %s", serviceKey));
         }
 
-        if (!new RpcConsumer().sendRequest(protocol, serviceMetadata)) {
+        String instanceKey = RpcServiceHelper.buildServiceInstanceKey(serviceMetadata);
+        if (consumerMap.get(instanceKey) == null) {
+            synchronized (consumerMap) {
+                if (consumerMap.get(instanceKey) == null) {
+                    RpcConsumer.newInstance(consumerMap, serviceMetadata);
+                }
+            }
+        }
+        RpcConsumer rpcConsumer = consumerMap.get(instanceKey);
+        if (rpcConsumer == null) {
             throw new RuntimeException(String.format("service connect failed: %s", serviceKey));
         }
+        rpcConsumer.sendRequest(protocol);
 
         MiniRpcFuture<MiniRpcResponse> future = new MiniRpcFuture<>(new DefaultPromise<>(new DefaultEventLoop()), timeout);
         MiniRpcRequestHolder.REQUEST_MAP.put(requestId, future);

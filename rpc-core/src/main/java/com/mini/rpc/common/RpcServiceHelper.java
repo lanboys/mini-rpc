@@ -11,6 +11,10 @@ public class RpcServiceHelper {
     return String.join("#", serviceName, serviceVersion);
   }
 
+  public static String buildServiceInstanceKey(ServiceMeta instance) {
+    return String.join(":", instance.getServiceAddr(), String.valueOf(instance.getServicePort()));
+  }
+
   public static HashCode hashCode(String string) {
     return Hashing.murmur3_32().hashString(string, StandardCharsets.UTF_8);
   }
