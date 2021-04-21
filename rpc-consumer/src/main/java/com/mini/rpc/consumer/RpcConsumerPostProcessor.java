@@ -2,7 +2,7 @@ package com.mini.rpc.consumer;
 
 import com.mini.rpc.common.RpcConstants;
 import com.mini.rpc.consumer.annotation.RpcReference;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -13,7 +13,6 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -21,7 +20,8 @@ import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@Component
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 public class RpcConsumerPostProcessor implements ApplicationContextAware, BeanClassLoaderAware, BeanFactoryPostProcessor {
 
