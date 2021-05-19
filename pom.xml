@@ -2,28 +2,35 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>com.mini.rpc</groupId>
-    <artifactId>mini-rpc</artifactId>
-    <version>1.0.0</version>
-    <packaging>pom</packaging>
-
-    <modules>
-        <module>rpc-provider</module>
-        <module>rpc-consumer</module>
-        <module>rpc-core</module>
-        <module>rpc-registry</module>
-        <module>rpc-test</module>
-        <module>rpc-facade</module>
-        <module>rpc-protocol</module>
-    </modules>
 
     <!-- Inherit defaults from Spring Boot -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.1.12.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.mini.rpc</groupId>
+    <artifactId>mini-rpc</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+        <jackson.version>2.9.6</jackson.version>
+        <curator.version>2.12.0</curator.version>
+    </properties>
+
+    <modules>
+        <module>rpc-provider</module>
+        <module>rpc-consumer</module>
+        <module>rpc-core</module>
+        <module>rpc-registry</module>
+        <module>rpc-protocol</module>
+    </modules>
 
     <dependencyManagement>
         <dependencies>
@@ -50,16 +57,6 @@
             <dependency>
                 <groupId>com.mini.rpc</groupId>
                 <artifactId>rpc-protocol</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.mini.rpc</groupId>
-                <artifactId>rpc-facade</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.mini.rpc</groupId>
-                <artifactId>rpc-test</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -137,12 +134,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.8</java.version>
-        <jackson.version>2.9.6</jackson.version>
-        <curator.version>2.12.0</curator.version>
-    </properties>
-
 </project>
