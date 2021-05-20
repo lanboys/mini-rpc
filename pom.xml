@@ -13,7 +13,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mini.rpc</groupId>
-    <artifactId>mini-rpc</artifactId>
+    <artifactId>rpc-parent</artifactId>
     <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
