@@ -20,40 +20,58 @@
 package com.mini.rpc.serialization;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 public class JsonSerialization implements RpcSerialization {
 
-    private static final ObjectMapper MAPPER;
+  private static final ObjectMapper MAPPER;
 
-    static {
-        MAPPER = generateMapper(JsonInclude.Include.ALWAYS);
-    }
+  static {
+    MAPPER = generateMapper(JsonInclude.Include.ALWAYS);
+  }
 
-    private static ObjectMapper generateMapper(JsonInclude.Include include) {
-        ObjectMapper customMapper = new ObjectMapper();
+  private static ObjectMapper generateMapper(JsonInclude.Include include) {
+    ObjectMapper customMapper = new ObjectMapper();
+    //customMapper.setSerializationInclusion(include);
+    //customMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    //customMapper.configure(DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS, true);
+    //customMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+    customMapper.registerModule(createJavaTimeModule());
+    return customMapper;
+  }
 
-        customMapper.setSerializationInclusion(include);
-        customMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        customMapper.configure(DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS, true);
-        customMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+  public static JavaTimeModule createJavaTimeModule() {
+    JavaTimeModule javaTimeModule = new JavaTimeModule();
+    javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+    javaTimeModule.addSerializer(LocalDate.class, new LocalDateSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+    javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern("HH:mm:ss")));
+    javaTimeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+    javaTimeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+    javaTimeModule.addDeserializer(LocalTime.class, new LocalTimeDeserializer(DateTimeFormatter.ofPattern("HH:mm:ss")));
+    return javaTimeModule;
+  }
 
-        return customMapper;
-    }
+  @Override
+  public <T> byte[] serialize(T obj) throws IOException {
+    return obj instanceof String ? ((String) obj).getBytes() : MAPPER.writeValueAsString(obj).getBytes(StandardCharsets.UTF_8);
+  }
 
-    @Override
-    public <T> byte[] serialize(T obj) throws IOException {
-        return obj instanceof String ? ((String) obj).getBytes() : MAPPER.writeValueAsString(obj).getBytes(StandardCharsets.UTF_8);
-    }
-
-    @Override
-    public <T> T deserialize(byte[] data, Class<T> clz) throws IOException {
-        return MAPPER.readValue(Arrays.toString(data), clz);
-    }
+  @Override
+  public <T> T deserialize(byte[] data, Class<T> clz) throws IOException {
+    return MAPPER.readValue(new String(data), clz);
+  }
 }
