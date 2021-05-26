@@ -26,13 +26,15 @@ public class RpcInvokerProxy implements InvocationHandler {
 
     private final String serviceVersion;
     private final long timeout;
+    private long heartbeatInterval;
     private final RegistryService registryService;
     private static final Map<String, RpcConsumer> consumerMap = new ConcurrentHashMap<>();
 
-    public RpcInvokerProxy(String serviceVersion, long timeout, RegistryService registryService) {
+    public RpcInvokerProxy(String serviceVersion, long timeout, long heartbeatInterval, RegistryService registryService) {
         this.serviceVersion = serviceVersion;
         this.timeout = timeout;
         this.registryService = registryService;
+        this.heartbeatInterval = heartbeatInterval;
     }
 
     @Override
@@ -70,7 +72,7 @@ public class RpcInvokerProxy implements InvocationHandler {
         if (consumerMap.get(instanceKey) == null) {
             synchronized (consumerMap) {
                 if (consumerMap.get(instanceKey) == null) {
-                    RpcConsumer.newInstance(consumerMap, serviceMetadata);
+                    RpcConsumer.newInstance(consumerMap, serviceMetadata, heartbeatInterval);
                 }
             }
         }

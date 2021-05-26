@@ -17,7 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RpcHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
-  private static final int HEARTBEAT_INTERVAL = 10;
+  private final long heartbeatInterval;
+
+  public RpcHeartBeatHandler(long heartbeatInterval) {
+    this.heartbeatInterval = heartbeatInterval;
+  }
 
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -35,7 +39,7 @@ public class RpcHeartBeatHandler extends ChannelInboundHandlerAdapter {
       } else {
         log.info("已关闭连接，不再发送心跳数据");
       }
-    }, HEARTBEAT_INTERVAL, TimeUnit.SECONDS);
+    }, heartbeatInterval, TimeUnit.SECONDS);
   }
 
   private MiniRpcProtocol<MiniRpcHeartBeat> buildHeartBeatData() {

@@ -20,4 +20,9 @@ public @interface RpcReference {
 
     long timeout() default 5000;
 
+    /**
+     * 向服务端发送心跳的间隔时间
+     */
+    long heartbeatInterval() default 10;
+
 }

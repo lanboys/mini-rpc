@@ -3,6 +3,7 @@ package com.mini.rpc.consumer;
 import com.mini.rpc.provider.registry.RegistryFactory;
 import com.mini.rpc.provider.registry.RegistryService;
 import com.mini.rpc.provider.registry.RegistryType;
+
 import org.springframework.beans.factory.FactoryBean;
 
 import java.lang.reflect.Proxy;
@@ -18,6 +19,8 @@ public class RpcReferenceBean implements FactoryBean<Object> {
     private String registryAddr;
 
     private long timeout;
+
+    private long heartbeatInterval;
 
     private Object object;
 
@@ -36,7 +39,7 @@ public class RpcReferenceBean implements FactoryBean<Object> {
         this.object = Proxy.newProxyInstance(
                 interfaceClass.getClassLoader(),
                 new Class<?>[]{interfaceClass},
-                new RpcInvokerProxy(serviceVersion, timeout, registryService));
+                new RpcInvokerProxy(serviceVersion, timeout, heartbeatInterval, registryService));
     }
 
     public void setInterfaceClass(Class<?> interfaceClass) {
@@ -57,5 +60,9 @@ public class RpcReferenceBean implements FactoryBean<Object> {
 
     public void setTimeout(long timeout) {
         this.timeout = timeout;
+    }
+
+    public void setHeartbeatInterval(long heartbeatInterval) {
+        this.heartbeatInterval = heartbeatInterval;
     }
 }

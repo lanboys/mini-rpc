@@ -26,11 +26,11 @@ public class RpcConsumer {
 
     private ChannelFuture future;
 
-    public static void newInstance(Map<String, RpcConsumer> consumerMap, ServiceMeta serviceMetadata) {
-        new RpcConsumer(consumerMap, serviceMetadata);
+    public static void newInstance(Map<String, RpcConsumer> consumerMap, ServiceMeta serviceMetadata, long heartbeatInterval) {
+        new RpcConsumer(consumerMap, serviceMetadata, heartbeatInterval);
     }
 
-    private RpcConsumer(Map<String, RpcConsumer> consumerMap, ServiceMeta serviceMetadata) {
+    private RpcConsumer(Map<String, RpcConsumer> consumerMap, ServiceMeta serviceMetadata, long heartbeatInterval) {
         Bootstrap bootstrap = new Bootstrap();
         EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
         bootstrap.group(eventLoopGroup).channel(NioSocketChannel.class)
@@ -38,7 +38,7 @@ public class RpcConsumer {
                 @Override
                 protected void initChannel(SocketChannel socketChannel) {
                     socketChannel.pipeline()
-                        .addLast(new RpcHeartBeatHandler())
+                        .addLast(new RpcHeartBeatHandler(heartbeatInterval))
                         .addLast(new MiniRpcEncoder())
                         .addLast(new MiniRpcDecoder())
                         .addLast(new RpcResponseHandler());
