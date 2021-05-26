@@ -10,10 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RpcIdleStateHandler extends IdleStateHandler {
 
-  private static final int READER_IDLE_TIME = 60;
+  private static final long READER_IDLE_TIME = 60;
 
   public RpcIdleStateHandler() {
     super(READER_IDLE_TIME, 0, 0, TimeUnit.SECONDS);
+  }
+
+  public RpcIdleStateHandler(long readerIdleTime) {
+    super(readerIdleTime, 0, 0, TimeUnit.SECONDS);
   }
 
   @Override

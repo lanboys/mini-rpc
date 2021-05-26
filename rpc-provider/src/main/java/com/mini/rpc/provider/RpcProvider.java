@@ -33,13 +33,15 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor {
 
     private String serverAddress;
     private final int serverPort;
+    private final long readerIdleTime;
     private final RegistryService serviceRegistry;
 
     private final Map<String, Object> rpcServiceMap = new HashMap<>();
 
-    public RpcProvider(int serverPort, RegistryService serviceRegistry) {
+    public RpcProvider(int serverPort, RegistryService serviceRegistry, long readerIdleTime) {
         this.serverPort = serverPort;
         this.serviceRegistry = serviceRegistry;
+        this.readerIdleTime = readerIdleTime;
     }
 
     @Override
@@ -66,7 +68,7 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline()
-                                    .addLast(new RpcIdleStateHandler())
+                                    .addLast(new RpcIdleStateHandler(readerIdleTime))
                                     .addLast(new MiniRpcEncoder())
                                     .addLast(new MiniRpcDecoder())
                                     .addLast(new RpcRequestHandler(rpcServiceMap));

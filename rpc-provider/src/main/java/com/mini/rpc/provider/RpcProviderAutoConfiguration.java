@@ -34,6 +34,6 @@ public class RpcProviderAutoConfiguration {
         }
         RegistryType type = RegistryType.valueOf(rpcProperties.getRegistryType());
         RegistryService serviceRegistry = RegistryFactory.getInstance(rpcProperties.getRegistryAddr(), type);
-        return new RpcProvider(rpcProperties.getServicePort(), serviceRegistry);
+        return new RpcProvider(rpcProperties.getServicePort(), serviceRegistry, rpcProperties.getReaderIdleTime());
     }
 }
