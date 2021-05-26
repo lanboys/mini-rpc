@@ -1,4 +1,4 @@
-package com.mini.rpc.example.api;
+package com.mini.rpc.example.api.service;
 
 public interface HelloService {
 

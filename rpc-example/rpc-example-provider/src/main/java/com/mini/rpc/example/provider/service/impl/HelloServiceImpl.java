@@ -1,6 +1,6 @@
 package com.mini.rpc.example.provider.service.impl;
 
-import com.mini.rpc.example.api.HelloService;
+import com.mini.rpc.example.api.service.HelloService;
 import com.mini.rpc.provider.annotation.RpcService;
 
 @RpcService(serviceInterface = HelloService.class, serviceVersion = "1.0.0")
