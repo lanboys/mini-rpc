@@ -19,6 +19,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,6 +42,7 @@ public class RpcConsumer {
                         .addLast(new RpcHeartBeatHandler(heartbeatInterval))
                         .addLast(new MiniRpcEncoder())
                         .addLast(new MiniRpcDecoder())
+                        .addLast(new LoggingHandler())
                         .addLast(new RpcResponseHandler());
                 }
             });

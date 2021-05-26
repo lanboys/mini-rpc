@@ -26,6 +26,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -71,6 +72,7 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor {
                                     .addLast(new RpcIdleStateHandler(readerIdleTime))
                                     .addLast(new MiniRpcEncoder())
                                     .addLast(new MiniRpcDecoder())
+                                    .addLast(new LoggingHandler())
                                     .addLast(new RpcRequestHandler(rpcServiceMap));
                         }
                     })
