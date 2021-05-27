@@ -1,9 +1,15 @@
 package com.mini.rpc.example.api.base;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Data;
+
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ApiResponse<T> implements Serializable {
 
   private long code;
