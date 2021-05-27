@@ -2,11 +2,15 @@ package com.mini.rpc.serialization;
 
 import com.caucho.hessian.io.HessianSerializerInput;
 import com.caucho.hessian.io.HessianSerializerOutput;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Type;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
@@ -48,5 +52,25 @@ public class HessianSerialization implements RpcSerialization {
         }
 
         return result;
+    }
+
+    @Override
+    public <T> T deserialize(String str, Type type) throws IOException {
+        throw new RuntimeException("暂时不支持");
+    }
+
+    @Override
+    public Object[] deserialize(Object[] str, Type[] type) throws IOException {
+        throw new RuntimeException("暂时不支持");
+    }
+
+    @Override
+    public String[] serializationString(Object[] objects) {
+        throw new RuntimeException("暂时不支持");
+    }
+
+    @Override
+    public String serializationString(Object object) {
+        throw new RuntimeException("暂时不支持");
     }
 }

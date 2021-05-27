@@ -20,7 +20,10 @@
 package com.mini.rpc.serialization;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -30,6 +33,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,10 +42,10 @@ import java.time.format.DateTimeFormatter;
 
 public class JsonSerialization implements RpcSerialization {
 
-  private static final ObjectMapper MAPPER;
+  private static final ObjectMapper objectMapper;
 
   static {
-    MAPPER = generateMapper(JsonInclude.Include.ALWAYS);
+    objectMapper = generateMapper(JsonInclude.Include.ALWAYS);
   }
 
   private static ObjectMapper generateMapper(JsonInclude.Include include) {
@@ -67,11 +71,45 @@ public class JsonSerialization implements RpcSerialization {
 
   @Override
   public <T> byte[] serialize(T obj) throws IOException {
-    return obj instanceof String ? ((String) obj).getBytes() : MAPPER.writeValueAsString(obj).getBytes(StandardCharsets.UTF_8);
+    return obj instanceof String ? ((String) obj).getBytes() : objectMapper.writeValueAsString(obj).getBytes(StandardCharsets.UTF_8);
   }
 
   @Override
   public <T> T deserialize(byte[] data, Class<T> clz) throws IOException {
-    return MAPPER.readValue(new String(data), clz);
+    return objectMapper.readValue(new String(data), clz);
+  }
+
+  @Override
+  public <T> T deserialize(String string, Type type) throws IOException {
+    TypeFactory typeFactory = objectMapper.getTypeFactory();
+    JavaType javaType = typeFactory.constructType(type);
+    return objectMapper.readValue(string, javaType);
+  }
+
+  @Override
+  public Object[] deserialize(Object[] content, Type[] type) throws IOException {
+    Object[] objects = new Object[content.length];
+    for (int i = 0; i < content.length; i++) {
+      objects[i] = deserialize(content[i].toString(), type[i]);
+    }
+    return objects;
+  }
+
+  @Override
+  public String[] serializationString(Object[] args) {
+    String[] json = new String[args.length];
+    for (int i = 0; i < args.length; i++) {
+      json[i] = serializationString(args[i]);
+    }
+    return json;
+  }
+
+  @Override
+  public String serializationString(Object object) {
+    try {
+      return objectMapper.writeValueAsString(object);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
   }
 }
