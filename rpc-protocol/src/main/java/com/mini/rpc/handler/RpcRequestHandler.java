@@ -3,6 +3,7 @@ package com.mini.rpc.handler;
 import com.mini.rpc.common.MiniRpcRequest;
 import com.mini.rpc.common.MiniRpcResponse;
 import com.mini.rpc.common.RpcServiceHelper;
+import com.mini.rpc.common.ServiceMeta;
 import com.mini.rpc.protocol.MiniRpcProtocol;
 import com.mini.rpc.protocol.MsgHeader;
 import com.mini.rpc.protocol.MsgStatus;
@@ -23,9 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RpcRequestHandler extends SimpleChannelInboundHandler<MiniRpcProtocol<MiniRpcRequest>> {
 
-    private final Map<String, Object> rpcServiceMap;
+    private final Map<String, ServiceMeta> rpcServiceMap;
 
-    public RpcRequestHandler(Map<String, Object> rpcServiceMap) {
+    public RpcRequestHandler(Map<String, ServiceMeta> rpcServiceMap) {
         this.rpcServiceMap = rpcServiceMap;
     }
 
@@ -54,13 +55,13 @@ public class RpcRequestHandler extends SimpleChannelInboundHandler<MiniRpcProtoc
 
     private Object handle(RpcSerialization rpcSerialization, MiniRpcRequest request) throws Throwable {
         String serviceKey = RpcServiceHelper.buildServiceKey(request.getClassName(), request.getServiceVersion());
-        Object serviceBean = rpcServiceMap.get(serviceKey);
+        ServiceMeta serviceBean = rpcServiceMap.get(serviceKey);
 
         if (serviceBean == null) {
             throw new RuntimeException(String.format("service not exist: %s:%s", request.getClassName(), request.getMethodName()));
         }
 
-        Class<?> serviceClass = serviceBean.getClass();
+        Class<?> serviceClass = serviceBean.getServiceClass();
         String methodName = request.getMethodName();
         Class<?>[] parameterTypes = request.getParameterTypes();
 
@@ -73,6 +74,6 @@ public class RpcRequestHandler extends SimpleChannelInboundHandler<MiniRpcProtoc
         }
         FastClass fastClass = FastClass.create(serviceClass);
         int methodIndex = fastClass.getIndex(methodName, parameterTypes);
-        return fastClass.invoke(methodIndex, serviceBean, parameters);
+        return fastClass.invoke(methodIndex, serviceBean.getActualService(), parameters);
     }
 }
