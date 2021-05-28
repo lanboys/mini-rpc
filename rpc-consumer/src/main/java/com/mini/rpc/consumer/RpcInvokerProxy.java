@@ -11,10 +11,13 @@ import com.mini.rpc.protocol.MsgHeader;
 import com.mini.rpc.protocol.MsgType;
 import com.mini.rpc.protocol.ProtocolConstants;
 import com.mini.rpc.provider.registry.RegistryService;
+import com.mini.rpc.serialization.RpcSerialization;
+import com.mini.rpc.serialization.SerializationFactory;
 import com.mini.rpc.serialization.SerializationTypeEnum;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -61,7 +64,7 @@ public class RpcInvokerProxy implements InvocationHandler {
         protocol.setBody(request);
 
         String serviceKey = RpcServiceHelper.buildServiceKey(request.getClassName(), request.getServiceVersion());
-        int invokerHashCode = args.length > 0 ? RpcServiceHelper.hashCode(args[0].toString()).asInt() :
+        int invokerHashCode = (args != null && args.length > 0) ? RpcServiceHelper.hashCode(args[0].toString()).asInt() :
             RpcServiceHelper.hashCode(serviceKey).asInt();
         ServiceMeta serviceMetadata = registryService.discovery(serviceKey, invokerHashCode);
         if (serviceMetadata == null) {
@@ -85,7 +88,9 @@ public class RpcInvokerProxy implements InvocationHandler {
         MiniRpcFuture<MiniRpcResponse> future = new MiniRpcFuture<>(new DefaultPromise<>(new DefaultEventLoop()), timeout);
         MiniRpcRequestHolder.REQUEST_MAP.put(requestId, future);
         // TODO hold request by ThreadLocal
-
-        return future.getPromise().get(future.getTimeout(), TimeUnit.MILLISECONDS).getData();
+        MiniRpcResponse rpcResponse = future.getPromise().get(future.getTimeout(), TimeUnit.MILLISECONDS);
+        Type returnType = method.getGenericReturnType();
+        RpcSerialization rpcSerialization = SerializationFactory.getRpcSerialization(header.getSerialization());
+        return rpcResponse.getData() == null ? null : rpcSerialization.deserialize((String) rpcResponse.getData(), returnType);
     }
 }
