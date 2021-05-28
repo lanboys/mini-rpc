@@ -9,4 +9,10 @@ public interface UserService {
   public User addUser(User user);
 
   public ApiResponse<User> addUserRequest(ApiRequest<User> apiRequest);
+
+  public void executeJob();
+
+  public User findMaxIdUser();
+
+  public ApiResponse<ApiResponse<User>> testType(ApiRequest<User> apiRequest1, ApiRequest<ApiRequest<User>> apiRequest2);
 }
