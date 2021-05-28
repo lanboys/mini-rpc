@@ -12,7 +12,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mini.rpc</groupId>
     <artifactId>rpc-example-parent</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
 
     <packaging>pom</packaging>
     <modules>
@@ -32,17 +32,17 @@
             <dependency>
                 <groupId>com.mini.rpc</groupId>
                 <artifactId>rpc-consumer</artifactId>
-                <version>1.0.2-SNAPSHOT</version>
+                <version>1.0.2</version>
             </dependency>
             <dependency>
                 <groupId>com.mini.rpc</groupId>
                 <artifactId>rpc-provider</artifactId>
-                <version>1.0.2-SNAPSHOT</version>
+                <version>1.0.2</version>
             </dependency>
             <dependency>
                 <groupId>com.mini.rpc</groupId>
                 <artifactId>rpc-example-api</artifactId>
-                <version>1.0.2-SNAPSHOT</version>
+                <version>1.0.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
