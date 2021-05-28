@@ -37,7 +37,7 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor {
     private final long readerIdleTime;
     private final RegistryService serviceRegistry;
 
-    private final Map<String, Object> rpcServiceMap = new HashMap<>();
+    private final Map<String, ServiceMeta> rpcServiceMap = new HashMap<>();
 
     public RpcProvider(int serverPort, RegistryService serviceRegistry, long readerIdleTime) {
         this.serverPort = serverPort;
@@ -90,24 +90,31 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor {
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         RpcService rpcService = AnnotationUtils.findAnnotation(bean.getClass(), RpcService.class);
-        if (rpcService != null) {
-            String serviceName = rpcService.serviceInterface().getName();
-            String serviceVersion = rpcService.serviceVersion();
+        if (rpcService == null) {
+            return bean;
+        }
+        String serviceName = rpcService.serviceInterface().getName();
+        Class<?> aClass;
+        try {
+            aClass = Class.forName(serviceName);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        String serviceVersion = rpcService.serviceVersion();
+        try {
+            ServiceMeta serviceMeta = new ServiceMeta();
+            serviceMeta.setServiceAddr(serverAddress);
+            serviceMeta.setServicePort(serverPort);
+            serviceMeta.setServiceName(serviceName);
+            serviceMeta.setServiceVersion(serviceVersion);
+            serviceMeta.setActualService(bean);
+            serviceMeta.setServiceClass(aClass);
 
-            try {
-                ServiceMeta serviceMeta = new ServiceMeta();
-                serviceMeta.setServiceAddr(serverAddress);
-                serviceMeta.setServicePort(serverPort);
-                serviceMeta.setServiceName(serviceName);
-                serviceMeta.setServiceVersion(serviceVersion);
-
-                serviceRegistry.register(serviceMeta);
-                rpcServiceMap.put(RpcServiceHelper.buildServiceKey(serviceMeta.getServiceName(), serviceMeta.getServiceVersion()), bean);
-            } catch (Exception e) {
-                log.error("failed to register service {}#{}", serviceName, serviceVersion, e);
-            }
+            serviceRegistry.register(serviceMeta);
+            rpcServiceMap.put(RpcServiceHelper.buildServiceKey(serviceMeta.getServiceName(), serviceMeta.getServiceVersion()), serviceMeta);
+        } catch (Exception e) {
+            log.error("failed to register service {}#{}", serviceName, serviceVersion, e);
         }
         return bean;
     }
-
 }
