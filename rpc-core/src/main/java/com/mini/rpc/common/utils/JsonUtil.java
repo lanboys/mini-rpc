@@ -1,4 +1,4 @@
-package com.mini.rpc.example.consumer.utils;
+package com.mini.rpc.common.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

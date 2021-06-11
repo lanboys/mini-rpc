@@ -2,7 +2,7 @@ package com.mini.rpc.example.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mini.rpc.consumer.RpcConsumerAutoConfiguration;
-import com.mini.rpc.example.consumer.utils.JsonUtil;
+import com.mini.rpc.common.utils.JsonUtil;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

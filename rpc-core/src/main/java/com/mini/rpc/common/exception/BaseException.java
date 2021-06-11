@@ -1,4 +1,4 @@
-package com.mini.rpc.example.api.base;
+package com.mini.rpc.common.exception;
 
 public class BaseException extends RuntimeException {
 

@@ -1,4 +1,7 @@
-package com.mini.rpc.example.api.base;
+package com.mini.rpc.common.exception.api;
+
+import com.mini.rpc.common.base.ApiStatus;
+import com.mini.rpc.common.exception.BaseException;
 
 import lombok.Getter;
 import lombok.Setter;

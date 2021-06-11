@@ -1,8 +1,8 @@
 package com.mini.rpc.example.consumer.controller;
 
+import com.mini.rpc.common.base.ApiRequest;
+import com.mini.rpc.common.base.ApiResponse;
 import com.mini.rpc.consumer.annotation.RpcReference;
-import com.mini.rpc.example.api.base.ApiRequest;
-import com.mini.rpc.example.api.base.ApiResponse;
 import com.mini.rpc.example.api.entity.User;
 import com.mini.rpc.example.api.service.HelloService;
 import com.mini.rpc.example.api.service.UserService;

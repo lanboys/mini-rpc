@@ -1,13 +1,18 @@
-package com.mini.rpc.example.api.base;
+package com.mini.rpc.common.base;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.mini.rpc.common.exception.api.ApiStatusException;
+import com.mini.rpc.common.exception.api.NullDataException;
+import com.mini.rpc.common.utils.JsonUtil;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ApiResponse<T> implements Serializable {
@@ -23,7 +28,7 @@ public class ApiResponse<T> implements Serializable {
     return status(ApiStatus.SUCCESS);
   }
 
-  public static <T> ApiResponse<T> error() {
+  public static ApiResponse error() {
     return status(ApiStatus.FAILED);
   }
 
@@ -87,10 +92,14 @@ public class ApiResponse<T> implements Serializable {
   }
 
   public T presentOrElseThrow() {
+    return presentOrElseThrow(null);
+  }
+
+  public T presentOrElseThrow(ApiStatusException e) {
     if (isSuccess() && isPresent()) {
       return data;
     }
-    throw isSuccess() ? toNullDataException() : toException();
+    throw isSuccess() ? (e == null ? toNullDataException() : e) : toException();
   }
 
   public T successOrElseThrow() {
@@ -115,5 +124,10 @@ public class ApiResponse<T> implements Serializable {
     map.put("msg", msg);
     map.put("data", data);
     return map;
+  }
+
+  @Override
+  public String toString() {
+    return JsonUtil.getInstance().toString(this);
   }
 }

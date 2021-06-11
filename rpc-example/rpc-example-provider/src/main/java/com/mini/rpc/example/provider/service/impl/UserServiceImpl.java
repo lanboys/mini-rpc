@@ -1,7 +1,7 @@
 package com.mini.rpc.example.provider.service.impl;
 
-import com.mini.rpc.example.api.base.ApiRequest;
-import com.mini.rpc.example.api.base.ApiResponse;
+import com.mini.rpc.common.base.ApiRequest;
+import com.mini.rpc.common.base.ApiResponse;
 import com.mini.rpc.example.api.entity.User;
 import com.mini.rpc.example.api.service.UserService;
 import com.mini.rpc.provider.annotation.RpcService;

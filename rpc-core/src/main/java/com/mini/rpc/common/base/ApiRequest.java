@@ -1,4 +1,4 @@
-package com.mini.rpc.example.api.base;
+package com.mini.rpc.common.base;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
