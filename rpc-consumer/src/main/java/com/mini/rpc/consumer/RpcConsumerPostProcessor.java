@@ -48,7 +48,7 @@ public class RpcConsumerPostProcessor implements ApplicationContextAware, BeanCl
             String beanClassName = beanDefinition.getBeanClassName();
             if (beanClassName != null) {
                 Class<?> clazz = ClassUtils.resolveClassName(beanClassName, this.classLoader);
-                ReflectionUtils.doWithFields(clazz, this::parseRpcReference);
+                ReflectionUtils.doWithFields(clazz, field -> parseRpcReference(field, beanFactory));
             }
         }
 
@@ -62,17 +62,17 @@ public class RpcConsumerPostProcessor implements ApplicationContextAware, BeanCl
         });
     }
 
-    private void parseRpcReference(Field field) {
+    private void parseRpcReference(Field field, ConfigurableListableBeanFactory beanFactory) {
         RpcReference annotation = AnnotationUtils.getAnnotation(field, RpcReference.class);
         if (annotation != null) {
             BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(RpcReferenceBean.class);
             builder.setInitMethodName(RpcConstants.INIT_METHOD_NAME);
             builder.addPropertyValue("interfaceClass", field.getType());
-            builder.addPropertyValue("serviceVersion", annotation.serviceVersion());
-            builder.addPropertyValue("registryType", annotation.registryType());
-            builder.addPropertyValue("registryAddr", annotation.registryAddress());
-            builder.addPropertyValue("timeout", annotation.timeout());
-            builder.addPropertyValue("heartbeatInterval", annotation.heartbeatInterval());
+            builder.addPropertyValue("serviceVersion", beanFactory.resolveEmbeddedValue(annotation.serviceVersion()));
+            builder.addPropertyValue("registryType", beanFactory.resolveEmbeddedValue(annotation.registryType()));
+            builder.addPropertyValue("registryAddr", beanFactory.resolveEmbeddedValue(annotation.registryAddress()));
+            builder.addPropertyValue("timeout", beanFactory.resolveEmbeddedValue(annotation.timeout()));
+            builder.addPropertyValue("heartbeatInterval", beanFactory.resolveEmbeddedValue(annotation.heartbeatInterval()));
 
             BeanDefinition beanDefinition = builder.getBeanDefinition();
             rpcRefBeanDefinitions.put(field.getName(), beanDefinition);

@@ -21,11 +21,11 @@ public @interface RpcReference {
     /**
      * 请求超时时间 单位ms
      */
-    long timeout() default 5000;
+    String timeout() default "5000";
 
     /**
      * 向服务端发送心跳的间隔时间 单位s
      */
-    long heartbeatInterval() default 10;
+    String heartbeatInterval() default "10";
 
 }

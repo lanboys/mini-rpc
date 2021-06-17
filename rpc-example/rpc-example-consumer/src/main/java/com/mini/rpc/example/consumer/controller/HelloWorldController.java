@@ -18,15 +18,15 @@ import java.time.LocalDateTime;
 public class HelloWorldController {
 
   @SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection", "SpringJavaInjectionPointsAutowiringInspection"})
-  @RpcReference(serviceVersion = "1.0.0", timeout = 3000)
+  @RpcReference(serviceVersion = "1.0.0", timeout = "3000")
   private HelloService helloFacade;
 
   @SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection", "SpringJavaInjectionPointsAutowiringInspection"})
-  @RpcReference(serviceVersion = "1.0.0", timeout = 3000)
+  @RpcReference(serviceVersion = "1.0.0", timeout = "3000")
   private WorldService worldFacade;
 
   @SuppressWarnings({"SpringJavaAutowiredFieldsWarningInspection", "SpringJavaInjectionPointsAutowiringInspection"})
-  @RpcReference(serviceVersion = "1.0.0", timeout = 6000, heartbeatInterval = 100)
+  @RpcReference(serviceVersion = "1.0.0", timeout = "6000", heartbeatInterval = "100", registryAddress = "${rpc.localRegistryAddress}")
   private UserService userFacade;
 
   @RequestMapping(value = "/hello")
