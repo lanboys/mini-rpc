@@ -1,6 +1,7 @@
 logging:
   level:
     org.apache.zookeeper: debug
+    com.mini: debug
 
 rpc:
   localRegistryAddress: localhost:2181

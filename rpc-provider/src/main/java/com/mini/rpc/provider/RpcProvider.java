@@ -4,6 +4,7 @@ import com.mini.rpc.codec.MiniRpcDecoder;
 import com.mini.rpc.codec.MiniRpcEncoder;
 import com.mini.rpc.common.RpcServiceHelper;
 import com.mini.rpc.common.ServiceMeta;
+import com.mini.rpc.common.utils.IPUtil;
 import com.mini.rpc.handler.RpcIdleStateHandler;
 import com.mini.rpc.handler.RpcRequestHandler;
 import com.mini.rpc.provider.annotation.RpcService;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RpcProvider implements InitializingBean, BeanPostProcessor {
 
-    private String serverAddress;
+    private String localServiceAddr;
+    private String publicServiceAddress;
     private final int serverPort;
     private final long readerIdleTime;
     private final RegistryService serviceRegistry;
@@ -43,6 +46,15 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor {
         this.serverPort = serverPort;
         this.serviceRegistry = serviceRegistry;
         this.readerIdleTime = readerIdleTime;
+        try {
+            this.localServiceAddr = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            log.error("fail to get local address.", e);
+        }
+        this.publicServiceAddress = IPUtil.getSelfPublicIp();
+        if (publicServiceAddress == null) {
+            throw new RuntimeException("fail to get public address");
+        }
     }
 
     @Override
@@ -57,8 +69,6 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor {
     }
 
     private void startRpcServer() throws Exception {
-        this.serverAddress = InetAddress.getLocalHost().getHostAddress();
-
         EventLoopGroup boss = new NioEventLoopGroup();
         EventLoopGroup worker = new NioEventLoopGroup();
         try {
@@ -78,8 +88,8 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor {
                     })
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-            ChannelFuture channelFuture = bootstrap.bind(this.serverAddress, this.serverPort).sync();
-            log.info("server addr {} started on port {}", this.serverAddress, this.serverPort);
+            ChannelFuture channelFuture = bootstrap.bind(this.localServiceAddr, this.serverPort).sync();
+            log.info("server addr {} started on port {}", this.localServiceAddr, this.serverPort);
             channelFuture.channel().closeFuture().sync();
         } finally {
             boss.shutdownGracefully();
@@ -103,7 +113,8 @@ public class RpcProvider implements InitializingBean, BeanPostProcessor {
         String serviceVersion = rpcService.serviceVersion();
         try {
             ServiceMeta serviceMeta = new ServiceMeta();
-            serviceMeta.setServiceAddr(serverAddress);
+            serviceMeta.setLocalServiceAddr(localServiceAddr);
+            serviceMeta.setServiceAddr(publicServiceAddress);
             serviceMeta.setServicePort(serverPort);
             serviceMeta.setServiceName(serviceName);
             serviceMeta.setServiceVersion(serviceVersion);

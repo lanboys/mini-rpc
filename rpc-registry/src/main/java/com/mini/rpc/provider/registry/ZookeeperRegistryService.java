@@ -14,6 +14,9 @@ import org.apache.curator.x.discovery.ServiceInstance;
 import java.io.IOException;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ZookeeperRegistryService implements RegistryService {
 
     public static final int BASE_SLEEP_TIME_MS = 1000;
@@ -37,12 +40,14 @@ public class ZookeeperRegistryService implements RegistryService {
 
     @Override
     public void register(ServiceMeta serviceMeta) throws Exception {
+        log.info("服务注册：{}", serviceMeta);
         ServiceInstance<ServiceMeta> serviceInstance = getServiceMetaServiceInstance(serviceMeta);
         serviceDiscovery.registerService(serviceInstance);
     }
 
     @Override
     public void unRegister(ServiceMeta serviceMeta) throws Exception {
+        log.info("服务注销：{}", serviceMeta);
         ServiceInstance<ServiceMeta> serviceInstance = getServiceMetaServiceInstance(serviceMeta);
         serviceDiscovery.unregisterService(serviceInstance);
     }

@@ -7,3 +7,4 @@ rpc:
 logging:
   level:
     org.apache.zookeeper: debug
+    com.mini: debug

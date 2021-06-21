@@ -13,6 +13,8 @@ public class ServiceMeta {
 
   private String serviceAddr;
 
+  private String localServiceAddr;
+
   private int servicePort;
 
   @JsonIgnore

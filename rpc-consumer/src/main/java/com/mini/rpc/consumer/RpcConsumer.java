@@ -10,6 +10,7 @@ import com.mini.rpc.handler.RpcResponseHandler;
 import com.mini.rpc.protocol.MiniRpcProtocol;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -20,6 +21,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -33,7 +35,7 @@ public class RpcConsumer {
 
     private RpcConsumer(Map<String, RpcConsumer> consumerMap, ServiceMeta serviceMetadata, long heartbeatInterval) {
         Bootstrap bootstrap = new Bootstrap();
-        EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
+        EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4, new DefaultThreadFactory("consumer"));
         bootstrap.group(eventLoopGroup).channel(NioSocketChannel.class)
             .handler(new ChannelInitializer<SocketChannel>() {
                 @Override
@@ -47,26 +49,42 @@ public class RpcConsumer {
                 }
             });
 
+        connect(consumerMap, serviceMetadata, bootstrap, eventLoopGroup, true);
+    }
+
+    private void connect(Map<String, RpcConsumer> consumerMap, ServiceMeta serviceMetadata,
+        Bootstrap bootstrap, EventLoopGroup eventLoopGroup, boolean localAddr) {
+        // 是否为本地ip服务
+        String serviceAddr = localAddr ? serviceMetadata.getLocalServiceAddr() : serviceMetadata.getServiceAddr();
+        int servicePort = serviceMetadata.getServicePort();
         try {
-            future = bootstrap.connect(serviceMetadata.getServiceAddr(), serviceMetadata.getServicePort()).sync();
-            if (!future.isSuccess()) {
-                log.error("connect rpc server {} on port {} failed.", serviceMetadata.getServiceAddr(), serviceMetadata.getServicePort());
-                future.cause().printStackTrace();
-                eventLoopGroup.shutdownGracefully();
-                return;
-            }
-            log.info("connect rpc server {} on port {} success.", serviceMetadata.getServiceAddr(), serviceMetadata.getServicePort());
-            String instanceKey = RpcServiceHelper.buildServiceInstanceKey(serviceMetadata);
-            consumerMap.put(instanceKey, this);
-            future.channel().closeFuture().addListener((ChannelFutureListener) closeFuture -> {
-                if (closeFuture.isSuccess()) {
+            future = bootstrap.connect(serviceAddr, servicePort);
+            future.addListener(future1 -> {
+                if (future1.isSuccess()) {
+                    log.info("connect rpc server {} on port {} success.", serviceAddr, servicePort);
+                    String instanceKey = RpcServiceHelper.buildServiceInstanceKey(serviceMetadata);
+                    consumerMap.put(instanceKey, RpcConsumer.this);
+                    future.channel().closeFuture().addListener((ChannelFutureListener) closeFuture -> {
+                        if (closeFuture.isSuccess()) {
+                            eventLoopGroup.shutdownGracefully();
+                            consumerMap.remove(instanceKey);
+                            log.info("connect server {} on port {} close.", serviceAddr, servicePort);
+                        }
+                    });
+                } else {
+                    log.error("connect rpc server {} on port {} failed.", serviceAddr, servicePort);
+                    future1.cause().printStackTrace();
+                    if (localAddr) {
+                        connect(consumerMap, serviceMetadata, bootstrap, eventLoopGroup, false);
+                        return;
+                    }
                     eventLoopGroup.shutdownGracefully();
-                    consumerMap.remove(instanceKey);
-                    log.info("connect server {} on port {} close.", serviceMetadata.getServiceAddr(), serviceMetadata.getServicePort());
                 }
             });
+            future.sync();
+            TimeUnit.MILLISECONDS.sleep(100);
         } catch (InterruptedException e) {
-            log.error("connect rpc server {} on port {} failed.", serviceMetadata.getServiceAddr(), serviceMetadata.getServicePort(), e);
+            log.error("connect rpc server {} on port {} failed.", serviceAddr, servicePort, e);
         }
     }
 
